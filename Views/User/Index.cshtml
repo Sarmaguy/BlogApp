@@ -1,0 +1,28 @@
+@model IEnumerable<BlogApp.Models.User>
+
+<h2>Users</h2>
+<a href="/User/Create">Add New User</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Username</td>
+                <td>@user.Email</td>
+                <td>
+                    <a href="/User/Edit/@user.Id">Edit</a> |
+                    <a href="/User/Delete/@user.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

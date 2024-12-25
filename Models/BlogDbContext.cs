@@ -12,7 +12,6 @@ namespace BlogApp.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Map the User entity to the "users" table (case-sensitive match)
             modelBuilder.Entity<User>().ToTable("users");
         }
     }

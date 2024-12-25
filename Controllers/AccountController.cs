@@ -7,7 +7,6 @@ namespace BlogApp.Controllers
     {
         private readonly BlogDbContext _db;
 
-        // Constructor with dependency injection
         public AccountController(BlogDbContext db)
         {
             _db = db;
@@ -26,7 +25,6 @@ namespace BlogApp.Controllers
 
             if (user != null)
             {
-                // Use TempData or a more modern session state mechanism
                 TempData["UserId"] = user.Id;
                 TempData["Username"] = user.Username;
                 return RedirectToAction("Index", "Home");
