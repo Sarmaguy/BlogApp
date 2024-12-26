@@ -21,7 +21,9 @@ namespace BlogApp.Models
         public DateTime? UpdatedAt { get; set; }
 
         [Column("user_id")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public User? User { get; set; }
+
+        public ICollection<Comment>? Comments { get; set; }
     }
 }

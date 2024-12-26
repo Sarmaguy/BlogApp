@@ -17,12 +17,26 @@ namespace BlogApp.Controllers
         // GET: /BlogPost
         public IActionResult Index(string search = null)
         {
-            var posts = string.IsNullOrEmpty(search) 
-                ? _db.BlogPosts.ToList() 
-                : _db.BlogPosts.Where(p => p.Title.Contains(search)).ToList();
+            var posts = string.IsNullOrEmpty(search)
+                ? _db.BlogPosts
+                    .Include(p => p.User)
+                    .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToList()
+                : _db.BlogPosts
+                    .Include(p => p.User)
+                    .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                    .Where(p => p.Title.Contains(search))
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToList();
 
+            ViewBag.SearchQuery = search; 
+            ViewBag.CurrentUserId = HttpContext.Session.GetInt32("UserId");
             return View(posts);
         }
+
 
         // GET: /BlogPost/Create
         public IActionResult Create()
@@ -120,5 +134,81 @@ namespace BlogApp.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public IActionResult AddComment(int blogPostId, string content)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId"); 
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                ModelState.AddModelError("Content", "Comment content cannot be empty.");
+                return RedirectToAction("Index");
+            }
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var comment = new Comment
+            {
+                BlogPostId = blogPostId,
+                Content = content,
+                UserId = userId.Value,
+                CreatedAt = DateTime.Now
+            };
+
+            _db.Comments.Add(comment);
+            _db.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+        
+        // [HttpPost, ActionName("Delete")]
+        // public IActionResult DeleteComment(int id)
+        // {
+        //     var comment = _db.Comments.Find(id);
+        //     if (comment == null) return NotFound();
+
+        //     var userId = HttpContext.Session.GetInt32("UserId");
+        //     if (userId == null || comment.UserId != userId)
+        //     {
+        //         return Unauthorized();
+        //     }
+
+        //     _db.Comments.Remove(comment);
+        //     _db.SaveChanges();
+        //     return RedirectToAction("Index", "BlogPost");
+        // }
+
+        [HttpPost]
+        public IActionResult EditComment(int id, string content)
+        {
+            var comment = _db.Comments.FirstOrDefault(c => c.Id == id);
+            if (comment == null) return NotFound();
+
+            // Ensure the current user is the owner of the comment
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (comment.UserId != userId)
+            {
+                return Unauthorized();
+            }
+
+            // Update the comment
+            comment.Content = content;
+            comment.UpdatedAt = DateTime.Now;
+            _db.SaveChanges();
+
+            // Return updated comment data as JSON
+            return Json(new
+            {
+                content = comment.Content,
+                updatedAt = comment.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+            });
+}
+
+
+
     }
 }

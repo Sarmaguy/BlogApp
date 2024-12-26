@@ -3,31 +3,121 @@
 <h2>Blog Posts</h2>
 
 <form method="get" action="/BlogPost">
-    <input type="text" name="search" placeholder="Search by title..." />
+    <input type="text" name="search" placeholder="Search by title..." value="@ViewBag.SearchQuery" class="form-control mb-3" />
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
-<a href="/BlogPost/Create" class="btn btn-success">Add New Post</a>
+@if (ViewBag.CurrentUserId != null)
+{
+    <a href="/BlogPost/Create" class="btn btn-success mb-3">Create New Post</a>
+}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Content</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var post in Model)
+@foreach (var post in Model)
+{
+    <div class="container border rounded p-3 mb-4">
+        <h3>@post.Title</h3>
+        <p><small>Author: @(post.User == null ? "Deleted User" : post.User.Username)</small></p>
+        <p>@post.Content</p>
+        <p><small>Published: @post.CreatedAt.ToString("g")</small></p>
+        
+        
+        @if (ViewBag.CurrentUserId != null && (int)ViewBag.CurrentUserId == post.UserId)
         {
-            <tr>
-                <td>@post.Title</td>
-                <td>@post.Content</td>
-                <td>
-                    <a href="/BlogPost/Edit/@post.Id">Edit</a> |
-                    <a href="/BlogPost/Delete/@post.Id">Delete</a>
-                </td>
-            </tr>
+            <div class="mt-2">
+                <a href="/BlogPost/Edit/@post.Id" class="btn btn-warning btn-sm">Edit</a>
+                <a href="/BlogPost/Delete/@post.Id" class="btn btn-danger btn-sm">Delete</a>
+            </div>
         }
-    </tbody>
-</table>
+
+        
+        @if (post.Comments.Any())
+        
+        {
+            <h5>Comments:</h5>
+            <ul>
+                @foreach (var comment in post.Comments)
+                {
+                    <div id="comment-@comment.Id" class="comment-container">
+                        <div class="comment-content">
+                            <span class="author">@(comment.UserId == null ? "Deleted User" : comment.User.Username):</span>
+                            <span class="text">@comment.Content</span>
+                            <span class="timestamp">
+                                @if (comment.UpdatedAt != null)
+                                {
+                                    <em>(Updated: @comment.UpdatedAt)</em>
+                                }
+                            </span>
+                        </div>
+                        
+
+                        @if (comment.UserId == ViewBag.CurrentUserId)
+                        {
+                            <button class="btn btn-primary btn-sm edit-btn" data-id="@comment.Id">Edit</button>
+                            <form asp-action="DeleteComment" asp-route-id="@comment.Id" method="post" style="display:inline;">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                            </form>
+                        }
+                    </div>
+
+                    <div id="edit-comment-form-@comment.Id" class="edit-form" style="display:none;">
+                        <textarea id="edit-content-@comment.Id" class="form-control">@comment.Content</textarea>
+                        <button class="btn btn-success btn-sm save-btn" data-id="@comment.Id">Save</button>
+                        <button class="btn btn-secondary btn-sm cancel-btn" data-id="@comment.Id">Cancel</button>
+                    </div>
+                }
+            </ul>
+        }
+         else
+        {
+            <p>No comments yet.</p>
+        }
+
+        <!-- Forma za dodavanje komentara -->
+        <h5>Add a Comment</h5>
+        <form method="post" action="/BlogPost/AddComment">
+            <input type="hidden" name="blogPostId" value="@post.Id" />
+            <textarea name="content" class="form-control" placeholder="Write your comment here..." required></textarea>
+            <button type="submit" class="btn btn-primary mt-2">Add Comment</button>
+        </form>
+    </div>
+}
+
+
+
+@section Scripts {
+    <script>
+        $(document).on('click', '.edit-btn', function () {
+            var id = $(this).data('id');
+            $('#comment-' + id).hide();
+            $('#edit-comment-form-' + id).show();
+        });
+
+        $(document).on('click', '.cancel-btn', function () {
+            var id = $(this).data('id');
+            $('#edit-comment-form-' + id).hide();
+            $('#comment-' + id).show();
+        });
+
+        $(document).on('click', '.save-btn', function () {
+            var id = $(this).data('id');
+            var content = $('#edit-content-' + id).val();
+
+            $.ajax({
+                url: '/BlogPost/EditComment',
+                type: 'POST',
+                data: { id: id, content: content },
+                success: function (response) {
+                    $('#comment-' + id + ' .text').text(response.content);
+                    $('#comment-' + id + ' .timestamp').html(response.updatedAt ? '<em>(Updated: ' + response.updatedAt + ')</em>' : '');
+                    $('#edit-comment-form-' + id).hide();
+                    $('#comment-' + id).show();
+                },
+                error: function (xhr) {
+                    alert('An error occurred: ' + xhr.responseText);
+                }
+            });
+        });
+    </script>
+}
+
+

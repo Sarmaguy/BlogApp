@@ -25,8 +25,9 @@ namespace BlogApp.Models
 
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.BlogPost)
-                .WithMany()
-                .HasForeignKey(c => c.BlogPostId);
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.BlogPostId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
