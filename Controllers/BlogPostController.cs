@@ -51,6 +51,7 @@ namespace BlogApp.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
+                TempData["ErrorMessage"] = "You must be logged in to create a post.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -61,6 +62,8 @@ namespace BlogApp.Controllers
                 post.CreatedAt = DateTime.Now;
                 _db.BlogPosts.Add(post);
                 _db.SaveChanges();
+
+                TempData["SuccessMessage"] = "Post created successfully!";
                 return RedirectToAction("Index");
             }
 
@@ -69,6 +72,8 @@ namespace BlogApp.Controllers
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
 
                 }
+
+            TempData["ErrorMessage"] = "Post creation failed! Please try again.";
 
 
             return View(post);
@@ -90,6 +95,7 @@ namespace BlogApp.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["ErrorMessage"] = "Post update failed! Please try again.";
                 return View(post);
             }
 
@@ -109,6 +115,8 @@ namespace BlogApp.Controllers
             post.UpdatedAt = DateTime.Now;
             _db.BlogPosts.Update(post);
             _db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Post updated successfully!";
             return RedirectToAction("Index");
         }
 
@@ -130,6 +138,7 @@ namespace BlogApp.Controllers
             {
                 _db.BlogPosts.Remove(post);
                 _db.SaveChanges();
+                TempData["SuccessMessage"] = "Post deleted successfully!";
             }
 
             return RedirectToAction("Index");
@@ -142,12 +151,13 @@ namespace BlogApp.Controllers
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                ModelState.AddModelError("Content", "Comment content cannot be empty.");
+                TempData["ErrorMessage"] = "Comment cannot be empty!";
                 return RedirectToAction("Index");
             }
 
             if (userId == null)
             {
+                TempData["ErrorMessage"] = "You must be logged in to comment.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -162,25 +172,34 @@ namespace BlogApp.Controllers
             _db.Comments.Add(comment);
             _db.SaveChanges();
 
+            TempData["SuccessMessage"] = "Comment added successfully!";
+
             return RedirectToAction("Index");
         }
         
-        // [HttpPost, ActionName("Delete")]
-        // public IActionResult DeleteComment(int id)
-        // {
-        //     var comment = _db.Comments.Find(id);
-        //     if (comment == null) return NotFound();
+        // POST: /BlogPost/DeleteComment/id
+        [HttpPost]
+        public IActionResult DeleteComment(int id)
+        {
+            var comment = _db.Comments.Find(id);
+            if (comment == null)
+            {
+                return NotFound();
+            }
 
-        //     var userId = HttpContext.Session.GetInt32("UserId");
-        //     if (userId == null || comment.UserId != userId)
-        //     {
-        //         return Unauthorized();
-        //     }
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null || comment.UserId != userId)
+            {
+                return Unauthorized();
+            }
 
-        //     _db.Comments.Remove(comment);
-        //     _db.SaveChanges();
-        //     return RedirectToAction("Index", "BlogPost");
-        // }
+            _db.Comments.Remove(comment);
+            _db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Comment deleted successfully!";
+            return RedirectToAction("Index", "BlogPost");
+        }
+
 
         [HttpPost]
         public IActionResult EditComment(int id, string content)
@@ -188,19 +207,17 @@ namespace BlogApp.Controllers
             var comment = _db.Comments.FirstOrDefault(c => c.Id == id);
             if (comment == null) return NotFound();
 
-            // Ensure the current user is the owner of the comment
             var userId = HttpContext.Session.GetInt32("UserId");
             if (comment.UserId != userId)
             {
                 return Unauthorized();
             }
 
-            // Update the comment
             comment.Content = content;
             comment.UpdatedAt = DateTime.Now;
             _db.SaveChanges();
 
-            // Return updated comment data as JSON
+
             return Json(new
             {
                 content = comment.Content,

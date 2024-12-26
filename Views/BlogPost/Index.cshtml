@@ -19,6 +19,7 @@
         <p><small>Author: @(post.User == null ? "Deleted User" : post.User.Username)</small></p>
         <p>@post.Content</p>
         <p><small>Published: @post.CreatedAt.ToString("g")</small></p>
+        <p><small>Updated: @post.UpdatedAt?.ToString("g")</small></p>
         
         
         @if (ViewBag.CurrentUserId != null && (int)ViewBag.CurrentUserId == post.UserId)
@@ -56,6 +57,7 @@
                             <form asp-action="DeleteComment" asp-route-id="@comment.Id" method="post" style="display:inline;">
                                 <button class="btn btn-danger btn-sm" type="submit">Delete</button>
                             </form>
+
                         }
                     </div>
 
@@ -97,6 +99,14 @@
             $('#edit-comment-form-' + id).hide();
             $('#comment-' + id).show();
         });
+
+        $(document).on('submit', '.delete-comment-form', function (e) {
+            var confirmDelete = confirm("Are you sure you want to delete this comment?");
+            if (!confirmDelete) {
+                e.preventDefault(); 
+            }
+        });
+
 
         $(document).on('click', '.save-btn', function () {
             var id = $(this).data('id');

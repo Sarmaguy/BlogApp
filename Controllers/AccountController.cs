@@ -33,11 +33,15 @@ namespace BlogApp.Controllers
                 {
                     HttpContext.Session.SetInt32("UserId", user.Id);
                     HttpContext.Session.SetString("Username", user.Username);
+
+                    TempData["SuccessMessage"] = "You have successfully logged in.";
+
                     return RedirectToAction("Index", "Home");
                 }
             }
 
             ViewBag.Error = "Invalid username or password.";
+            TempData["ErrorMessage"] = "Invalid username or password.";
             return View();
         }
 
@@ -45,6 +49,8 @@ namespace BlogApp.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+
+            TempData["SuccessMessage"] = "You have successfully logged out.";
             return RedirectToAction("Login");
         }
     }
