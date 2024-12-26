@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using BlogApp.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlogApp.Controllers
 {
     public class AccountController : Controller
     {
         private readonly BlogDbContext _db;
+        private readonly PasswordHasher<User> _passwordHasher;
 
         public AccountController(BlogDbContext db)
         {
             _db = db;
+            _passwordHasher = new PasswordHasher<User>();
         }
 
         // GET: Login
@@ -22,13 +25,16 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult Login(string username, string password)
         {
-            var user = _db.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
-
+            var user = _db.Users.FirstOrDefault(u => u.Username == username);
             if (user != null)
             {
-                HttpContext.Session.SetInt32("UserId", user.Id);
-                HttpContext.Session.SetString("Username", user.Username);
-                return RedirectToAction("Index", "Home");
+                var result = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    HttpContext.Session.SetInt32("UserId", user.Id);
+                    HttpContext.Session.SetString("Username", user.Username);
+                    return RedirectToAction("Index", "Home");
+                }
             }
 
             ViewBag.Error = "Invalid username or password.";

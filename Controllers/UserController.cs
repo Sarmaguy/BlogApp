@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using BlogApp.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlogApp.Controllers
 {
     public class UserController : Controller
     {
         private readonly BlogDbContext _db;
+        private readonly PasswordHasher<User> _passwordHasher;
 
         public UserController(BlogDbContext db)
         {
             _db = db;
+            _passwordHasher = new PasswordHasher<User>();
+            
         }
 
         // GET: /User
@@ -32,6 +36,7 @@ namespace BlogApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _db.Users.Add(user);
                 _db.SaveChanges();
                 return RedirectToAction("Index");
@@ -57,6 +62,7 @@ namespace BlogApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _db.Users.Update(user);
                 _db.SaveChanges();
                 return RedirectToAction("Index");
