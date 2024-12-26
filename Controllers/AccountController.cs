@@ -17,6 +17,7 @@ namespace BlogApp.Controllers
         {
             return View();
         }
+
         // POST: Login
         [HttpPost]
         public IActionResult Login(string username, string password)
@@ -25,8 +26,8 @@ namespace BlogApp.Controllers
 
             if (user != null)
             {
-                TempData["UserId"] = user.Id;
-                TempData["Username"] = user.Username;
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("Username", user.Username);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -37,7 +38,7 @@ namespace BlogApp.Controllers
         // GET: Logout
         public IActionResult Logout()
         {
-            TempData.Clear();
+            HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
     }

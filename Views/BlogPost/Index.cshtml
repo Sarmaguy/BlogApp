@@ -1,0 +1,33 @@
+@model IEnumerable<BlogApp.Models.BlogPost>
+
+<h2>Blog Posts</h2>
+
+<form method="get" action="/BlogPost">
+    <input type="text" name="search" placeholder="Search by title..." />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<a href="/BlogPost/Create" class="btn btn-success">Add New Post</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Content</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var post in Model)
+        {
+            <tr>
+                <td>@post.Title</td>
+                <td>@post.Content</td>
+                <td>
+                    <a href="/BlogPost/Edit/@post.Id">Edit</a> |
+                    <a href="/BlogPost/Delete/@post.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

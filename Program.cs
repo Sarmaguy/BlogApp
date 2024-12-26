@@ -3,13 +3,23 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<BlogDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); 
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
 
 if (!app.Environment.IsDevelopment())
 {
@@ -22,7 +32,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization(); 
+app.UseSession();
+
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

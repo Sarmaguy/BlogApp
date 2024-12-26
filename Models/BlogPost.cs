@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlogApp.Models
 {
@@ -13,11 +14,14 @@ namespace BlogApp.Models
         [Required]
         public string Content { get; set; }
 
+        [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
 
+        [Column("user_id")]
         public int UserId { get; set; }
-        public User User { get; set; } 
+        public User? User { get; set; }
     }
 }
