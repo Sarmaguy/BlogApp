@@ -7,8 +7,12 @@ builder.Services.AddHttpContextAccessor();
 
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<BlogDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? Environment.GetEnvironmentVariable("DefaultConnection");
+
+builder.Services.AddDbContext<DbContext>(options =>options.UseSqlServer(connectionString));
 
 
 builder.Services.AddSession(options =>
