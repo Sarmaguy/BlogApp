@@ -20,11 +20,11 @@ namespace BlogApp.Controllers
         // GET: /User
         public IActionResult Index()
         {
-            // if (HttpContext.Session.GetInt32("UserId") == null)
-            // {
-            //     TempData["ErrorMessage"] = "You must be logged in to view users.";
-            //     return RedirectToAction("Login", "Account");
-            // }
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to view users.";
+                return RedirectToAction("Login", "Account");
+            }
 
             var users = _db.Users.ToList();
             return View(users);
@@ -34,11 +34,11 @@ namespace BlogApp.Controllers
         public IActionResult Create()
         {
 
-            // if (HttpContext.Session.GetInt32("UserId") == null)
-            // {
-            //     TempData["ErrorMessage"] = "You must be logged in to create a user.";
-            //     return RedirectToAction("Login", "Account");
-            // }
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to create a user.";
+                return RedirectToAction("Login", "Account");
+            }
             return View();
         }
 
@@ -46,10 +46,10 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult Create(User user)
         {  
-            // if (HttpContext.Session.GetInt32("UserId") == null)
-            // {
-            //     return Unauthorized();
-            // }
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
                 user.Password = _passwordHasher.HashPassword(user, user.Password);
