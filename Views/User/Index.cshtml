@@ -1,7 +1,10 @@
 @model IEnumerable<BlogApp.Models.User>
 
 <h2>Users</h2>
-<a href="/User/Create">Add New User</a>
+@* <a href="/User/Create">Add New User</a> *@
+
+<button style="color: #28a745;" onclick="location.href='/User/Create'">Add New User</button>
+
 <table class="table">
     <thead>
         <tr>
@@ -18,10 +21,13 @@
                 <td>@user.Id</td>
                 <td>@user.Username</td>
                 <td>@user.Email</td>
+                @if (user.Id != 1)
+                {
                 <td>
                     <a href="/User/Edit/@user.Id">Edit</a> |
                     <a href="/User/Delete/@user.Id">Delete</a>
                 </td>
+                }
             </tr>
         }
     </tbody>

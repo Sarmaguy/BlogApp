@@ -108,6 +108,15 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult Edit(User user)
         {
+
+
+            if (user.Id == 1){
+                TempData["ErrorMessage"] = "You cannot edit the admin user!";
+                return View(user);
+            }
+
+
+
             if (ModelState.IsValid)
             {
                 user.Password = _passwordHasher.HashPassword(user, user.Password);
@@ -160,6 +169,12 @@ namespace BlogApp.Controllers
         [HttpPost, ActionName("Delete")]
         public IActionResult DeleteConfirmed(int id)
         {
+
+            if (id == 1){
+                TempData["ErrorMessage"] = "You cannot delete the admin user!";
+                return RedirectToAction("Index");
+            }
+            
             var user = _db.Users.Find(id);
             if (user != null)
             {
