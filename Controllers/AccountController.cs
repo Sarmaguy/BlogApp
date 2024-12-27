@@ -36,7 +36,7 @@ namespace BlogApp.Controllers
 
                     TempData["SuccessMessage"] = "You have successfully logged in.";
 
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "BlogPost");
                 }
             }
 

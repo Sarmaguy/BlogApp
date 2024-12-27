@@ -112,13 +112,17 @@ namespace BlogApp.Controllers
                 return Unauthorized();
             }
 
+            post.CreatedAt = existingPost.CreatedAt;
+
             post.UpdatedAt = DateTime.Now;
+
             _db.BlogPosts.Update(post);
             _db.SaveChanges();
 
             TempData["SuccessMessage"] = "Post updated successfully!";
             return RedirectToAction("Index");
         }
+
 
         // GET: /BlogPost/Delete/id
         public IActionResult Delete(int id)
