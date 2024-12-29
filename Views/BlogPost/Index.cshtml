@@ -191,7 +191,10 @@
             <p class="text-muted"><small>Author: @(post.User == null ? "Deleted User" : post.User.Username)</small></p>
             <p>@post.Content</p>
             <p class="text-muted"><small>Published: @post.CreatedAt.ToString("g")</small></p>
-            <p class="text-muted"><small>Updated: @post.UpdatedAt?.ToString("g")</small></p>
+            @if (post.UpdatedAt != null)
+            {
+                <p class="text-muted"><small>Updated: @post.UpdatedAt?.ToString("g")</small></p>
+            }
 
             @if (ViewBag.CurrentUserId != null && (int)ViewBag.CurrentUserId == post.UserId)
             {
@@ -259,18 +262,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
 <script>
+
+    // Show/hide edit form
     $(document).on('click', '.edit-link', function () {
         var id = $(this).data('id');
         $('#comment-' + id).hide();
         $('#edit-comment-form-' + id).show();
     });
-
+    // Cancel edit
     $(document).on('click', '.cancel-btn', function () {
         var id = $(this).data('id');
         $('#edit-comment-form-' + id).hide();
         $('#comment-' + id).show();
     });
-
+    // Popup confirmation for delete
     $(document).on('click', '.delete-link', function (e) {
     e.preventDefault();  
 
@@ -278,13 +283,14 @@
     if (confirmDelete) {
         $(this).closest('form').submit();
     }
-});
+    });
 
-
+    // Save edited comment 
     $(document).on('click', '.save-btn', function () {
         var id = $(this).data('id');
         var content = $('#edit-content-' + id).val();
 
+        // Send AJAX request for inline editing
         $.ajax({
             url: '/BlogPost/EditComment',
             type: 'POST',

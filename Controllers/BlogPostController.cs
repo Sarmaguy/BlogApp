@@ -17,6 +17,7 @@ namespace BlogApp.Controllers
         // GET: /BlogPost
         public IActionResult Index(string search = null)
         {
+
             var posts = string.IsNullOrEmpty(search)
                 ? _db.BlogPosts
                     .Include(p => p.User)
@@ -48,6 +49,7 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult Create(BlogPost post)
         {
+            // Check if user is logged in
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
@@ -93,6 +95,7 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult Edit(BlogPost post)
         {
+            // Validate the model
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Post update failed! Please try again.";
@@ -102,11 +105,12 @@ namespace BlogApp.Controllers
             post.UserId = HttpContext.Session.GetInt32("UserId").Value;
 
             var existingPost = _db.BlogPosts.AsNoTracking().FirstOrDefault(p => p.Id == post.Id);
+            // Check if post exists
             if (existingPost == null)
             {
                 return NotFound();
             }
-
+            // Check if user is authorized to edit the post
             if (existingPost.UserId != post.UserId)
             {
                 return Unauthorized();
@@ -151,18 +155,19 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult AddComment(int blogPostId, string content)
         {
+
+            // Check if user is logged in
             var userId = HttpContext.Session.GetInt32("UserId"); 
-
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                TempData["ErrorMessage"] = "Comment cannot be empty!";
-                return RedirectToAction("Index");
-            }
-
             if (userId == null)
             {
                 TempData["ErrorMessage"] = "You must be logged in to comment.";
                 return RedirectToAction("Login", "Account");
+            }
+            // Check if comment is empty
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                TempData["ErrorMessage"] = "Comment cannot be empty!";
+                return RedirectToAction("Index");
             }
 
             var comment = new Comment
@@ -191,6 +196,7 @@ namespace BlogApp.Controllers
                 return NotFound();
             }
 
+            // Check if user is authorized to delete the comment
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null || comment.UserId != userId)
             {
@@ -211,6 +217,7 @@ namespace BlogApp.Controllers
             var comment = _db.Comments.FirstOrDefault(c => c.Id == id);
             if (comment == null) return NotFound();
 
+            // Check if user is authorized to edit the comment
             var userId = HttpContext.Session.GetInt32("UserId");
             if (comment.UserId != userId)
             {
@@ -221,7 +228,7 @@ namespace BlogApp.Controllers
             comment.UpdatedAt = DateTime.Now;
             _db.SaveChanges();
 
-
+            // Return the updated comment content in JSON format so it can be used in the view with AJAX
             return Json(new
             {
                 content = comment.Content,

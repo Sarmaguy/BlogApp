@@ -25,12 +25,15 @@ namespace BlogApp.Controllers
         [HttpPost]
         public IActionResult Login(string username, string password)
         {
+            // Find the user with the given username
             var user = _db.Users.FirstOrDefault(u => u.Username == username);
             if (user != null)
             {
+                // Verify the password
                 var result = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
                 if (result == PasswordVerificationResult.Success)
                 {
+                    // Store the user ID and username in the session
                     HttpContext.Session.SetInt32("UserId", user.Id);
                     HttpContext.Session.SetString("Username", user.Username);
 
@@ -40,6 +43,8 @@ namespace BlogApp.Controllers
                 }
             }
 
+            // If the username or password is incorrect, display an error message
+
             ViewBag.Error = "Invalid username or password.";
             TempData["ErrorMessage"] = "Invalid username or password.";
             return View();
@@ -48,6 +53,7 @@ namespace BlogApp.Controllers
         // GET: Logout
         public IActionResult Logout()
         {
+            // Clear the session
             HttpContext.Session.Clear();
 
             TempData["SuccessMessage"] = "You have successfully logged out.";

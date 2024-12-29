@@ -20,6 +20,7 @@ namespace BlogApp.Controllers
         // GET: /User
         public IActionResult Index()
         {
+            // Check if the user is logged in
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 TempData["ErrorMessage"] = "You must be logged in to view users.";
@@ -52,6 +53,7 @@ namespace BlogApp.Controllers
             }
             if (ModelState.IsValid)
             {
+                // Hash the password
                 user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _db.Users.Add(user);
 
@@ -71,6 +73,7 @@ namespace BlogApp.Controllers
                             user.Username = null;
                             return View(user);
                         }
+                        //the only other option is that the email is already in use
                         else {
                             TempData["ErrorMessage"] = "Email already exists! Please try again.";
                             user.Email = null;
@@ -109,7 +112,7 @@ namespace BlogApp.Controllers
         public IActionResult Edit(User user)
         {
 
-
+            // Admin user cannot be edited
             if (user.Id == 1){
                 TempData["ErrorMessage"] = "You cannot edit the admin user!";
                 return View(user);
@@ -119,6 +122,7 @@ namespace BlogApp.Controllers
 
             if (ModelState.IsValid)
             {
+                // Hash the password
                 user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _db.Users.Update(user);
 
@@ -129,6 +133,7 @@ namespace BlogApp.Controllers
                 {
                     if (ex.InnerException.Message.Contains("duplicate key"))
                     {
+                        //check in db if there is the user with same username
                         var existingUser = _db.Users.FirstOrDefault(u => u.Username == user.Username);
                         if (existingUser != null)
                         {
@@ -136,6 +141,7 @@ namespace BlogApp.Controllers
                             user.Username = null;
                             return View(user);
                         }
+                        //the only other option is that the email is already in use
                         else {
                             TempData["ErrorMessage"] = "Email already exists! Please try again.";
                             user.Email = null;
@@ -170,6 +176,7 @@ namespace BlogApp.Controllers
         public IActionResult DeleteConfirmed(int id)
         {
 
+            // Admin user cannot be deleted
             if (id == 1){
                 TempData["ErrorMessage"] = "You cannot delete the admin user!";
                 return RedirectToAction("Index");
